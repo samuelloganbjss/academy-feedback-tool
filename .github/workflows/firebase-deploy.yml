@@ -26,12 +26,11 @@ jobs:
 
       # Step 4: Authenticate Firebase using the Service Account Key
       - name: Authenticate to Firebase
-        env:
-          GOOGLE_APPLICATION_CREDENTIALS: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_KEY }}
         run: |
           echo "${{ secrets.FIREBASE_SERVICE_ACCOUNT_KEY }}" > ${HOME}/gcloud-service-key.json
-          firebase use --add
+          export GOOGLE_APPLICATION_CREDENTIALS="${HOME}/gcloud-service-key.json"
+          firebase projects:list
 
       # Step 5: Deploy Firebase Functions
       - name: Deploy Firebase Functions
-        run: firebase deploy --only functions --token "${{ secrets.FIREBASE_SERVICE_ACCOUNT_KEY }}"
+        run: firebase deploy --only functions
