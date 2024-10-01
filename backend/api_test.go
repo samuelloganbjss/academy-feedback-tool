@@ -1,29 +1,67 @@
 package main
 
 import (
+	"bytes"
+	"encoding/json"
 	"net/http"
 	"net/http/httptest"
 	"testing"
+
+	"github.com/samuelloganbjss/academy-feedback-tool/api"
+	"github.com/samuelloganbjss/academy-feedback-tool/db"
+	"github.com/samuelloganbjss/academy-feedback-tool/service"
 )
 
-func TestGetStudents(t *testing.T) {
+var studentAPI *api.StudentAPI
 
-	req, err := http.NewRequest("GET", "/api/students", nil)
+func setup() {
+
+	dbRepo := db.NewInMemoryRepository()
+
+	studentService := service.NewStudentService(dbRepo)
+	studentAPI = api.NewStudentAPI(studentService)
+}
+
+func TestAddReport(t *testing.T) {
+	setup()
+
+	report := map[string]interface{}{
+		"tutorID":   1,
+		"studentID": 1,
+		"content":   "Test report content",
+	}
+	reportJSON, err := json.Marshal(report)
+	if err != nil {
+		t.Fatalf("Could not marshal report JSON: %v", err)
+	}
+
+	req, err := http.NewRequest("POST", "/api/students/reports", bytes.NewBuffer(reportJSON))
 	if err != nil {
 		t.Fatal(err)
 	}
+	req.Header.Set("Content-Type", "application/json")
 
 	rr := httptest.NewRecorder()
-	handler := http.HandlerFunc(getStudents)
 
+	handler := http.HandlerFunc(studentAPI.AddReport)
 	handler.ServeHTTP(rr, req)
 
 	if status := rr.Code; status != http.StatusOK {
 		t.Errorf("handler returned wrong status code: got %v want %v", status, http.StatusOK)
 	}
 
-	expected := "a list of all students from the db"
-	if rr.Body.String() != expected {
-		t.Errorf("handler returned unexpected body: got %v want %v", rr.Body.String(), expected)
+	var addedReport map[string]interface{}
+	err = json.Unmarshal(rr.Body.Bytes(), &addedReport)
+	if err != nil {
+		t.Fatalf("Could not unmarshal response JSON: %v", err)
 	}
+
+	if addedReport["content"] != "Test report content" {
+		t.Errorf("handler returned wrong report content: got %v want %v", addedReport["content"], "Test report content")
+	}
+
+	if addedReport["id"] == nil {
+		t.Errorf("Expected report ID to be set, but got nil")
+	}
+
 }
