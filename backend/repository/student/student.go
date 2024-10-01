@@ -1,10 +1,10 @@
 package student
 
 import (
-	"feedback-tool/model"
+	"github.com/samuelloganbjss/academy-feedback-tool/model"
 )
 
 type StudentRepository interface {
-    GetStudents() ([]model.Student, error)
+	GetStudents() ([]model.Student, error)
 	Close()
 }

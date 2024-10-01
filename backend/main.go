@@ -1,15 +1,16 @@
 package main
 
 import (
-	"feedback-tool/api"
-	"feedback-tool/config"
-	"feedback-tool/db"
-	"feedback-tool/repository/student"
-	"feedback-tool/service"
 	"fmt"
 	"io"
 	"net/http"
-	"github.com/rs/cors" 
+
+	"github.com/rs/cors"
+	"github.com/samuelloganbjss/academy-feedback-tool/api"
+	"github.com/samuelloganbjss/academy-feedback-tool/config"
+	"github.com/samuelloganbjss/academy-feedback-tool/db"
+	"github.com/samuelloganbjss/academy-feedback-tool/repository/student"
+	"github.com/samuelloganbjss/academy-feedback-tool/service"
 )
 
 func rootHandler(writer http.ResponseWriter, request *http.Request) {
@@ -35,12 +36,12 @@ func getStudents(writer http.ResponseWriter, request *http.Request) {
 }
 
 func initializeDatabase(config config.DatabaseConfig) (student.StudentRepository, error) {
-    switch config.Type {
-    case "inmemory":
-        return db.NewInMemoryRepository(), nil
-    default:
-        return nil, fmt.Errorf("unsupported database type: %s", config.Type)
-    }
+	switch config.Type {
+	case "inmemory":
+		return db.NewInMemoryRepository(), nil
+	default:
+		return nil, fmt.Errorf("unsupported database type: %s", config.Type)
+	}
 }
 
 func main() {

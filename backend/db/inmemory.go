@@ -1,14 +1,16 @@
 package db
-import(
-	"feedback-tool/model"
+
+import (
+	"github.com/samuelloganbjss/academy-feedback-tool/model"
 )
 
 var students []model.Student
+
 type InMemoryRepository struct{}
 
 func NewInMemoryRepository() *InMemoryRepository {
-    InitDB() // Initialize the in-memory database with sample data
-    return &InMemoryRepository{}
+	InitDB() // Initialize the in-memory database with sample data
+	return &InMemoryRepository{}
 }
 
 func InitDB() {

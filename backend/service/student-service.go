@@ -1,23 +1,24 @@
 package service
 
 import (
-	"fmt"
 	"errors"
-	"feedback-tool/model"
-	"feedback-tool/repository/student"
+	"fmt"
+
+	"github.com/samuelloganbjss/academy-feedback-tool/model"
+	"github.com/samuelloganbjss/academy-feedback-tool/repository/student"
 )
 
 type StudentService struct {
-    repository student.StudentRepository
+	repository student.StudentRepository
 }
 
 func NewStudentService(repo student.StudentRepository) *StudentService {
-    return &StudentService{
-        repository: repo,
-    }
+	return &StudentService{
+		repository: repo,
+	}
 }
 
-func (s* StudentService) GetStudentsService() ([]model.Student, error) {
+func (s *StudentService) GetStudentsService() ([]model.Student, error) {
 	students, err := s.repository.GetStudents()
 
 	if err != nil {
