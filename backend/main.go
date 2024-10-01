@@ -46,10 +46,8 @@ func initializeDatabase(config config.DatabaseConfig) (student.StudentRepository
 
 func main() {
 
-	// Use the configuration for the in-memory database from Layering-backend
 	config := config.InMemory
 
-	// Initialize the database from Layering-backend
 	dbRepo, err := initializeDatabase(config)
 	if err != nil {
 		fmt.Println("Error initializing the database:", err)
@@ -65,6 +63,9 @@ func main() {
 	router.HandleFunc("/", rootHandler)
 	router.HandleFunc("/api/students", studentAPI.GetStudents)
 	router.HandleFunc("/api/tutors", getTutors)
+
+	router.HandleFunc("/api/students/reports", studentAPI.AddReport)
+	router.HandleFunc("/api/students/reports/edit", studentAPI.EditReport)
 
 	c := cors.New(cors.Options{
 		AllowedOrigins: []string{"http://localhost:3000"},

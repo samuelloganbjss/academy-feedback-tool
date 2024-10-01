@@ -28,3 +28,11 @@ func (s *StudentService) GetStudentsService() ([]model.Student, error) {
 
 	return students, nil
 }
+
+func (s *StudentService) AddReportService(report model.Report) (model.Report, error) {
+	return s.repository.AddReport(report)
+}
+
+func (s *StudentService) EditReportService(id int, newContent string, tutorID int) (model.Report, error) {
+	return s.repository.EditReport(id, newContent, tutorID)
+}
