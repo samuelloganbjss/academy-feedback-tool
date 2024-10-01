@@ -13,3 +13,9 @@ type Report struct {
 	Content   string `json:"content"`
 	Timestamp string `json:"timestamp"`
 }
+
+type Tutor struct {
+	ID         int    `json:"id"`
+	Name       string `json:"name"`
+	Department string `json:"department"`
+}

@@ -10,6 +10,7 @@ import (
 	"github.com/samuelloganbjss/academy-feedback-tool/config"
 	"github.com/samuelloganbjss/academy-feedback-tool/db"
 	"github.com/samuelloganbjss/academy-feedback-tool/repository/student"
+	"github.com/samuelloganbjss/academy-feedback-tool/repository/tutor"
 	"github.com/samuelloganbjss/academy-feedback-tool/service"
 )
 
@@ -35,12 +36,12 @@ func getStudents(writer http.ResponseWriter, request *http.Request) {
 	io.WriteString(writer, "a list of all students from the db")
 }
 
-func initializeDatabase(config config.DatabaseConfig) (student.StudentRepository, error) {
+func initializeDatabase(config config.DatabaseConfig) (student.StudentRepository, tutor.TutorRepository , error) {
 	switch config.Type {
 	case "inmemory":
-		return db.NewInMemoryRepository(), nil
+		return db.NewInMemoryRepository(), db.NewInMemoryRepository(), nil
 	default:
-		return nil, fmt.Errorf("unsupported database type: %s", config.Type)
+		return nil, nil, fmt.Errorf("unsupported database type: %s", config.Type)
 	}
 }
 
@@ -48,24 +49,27 @@ func main() {
 
 	config := config.InMemory
 
-	dbRepo, err := initializeDatabase(config)
+	dbRepoStudent, dbRepoTutor, err := initializeDatabase(config)
 	if err != nil {
 		fmt.Println("Error initializing the database:", err)
 		return
 	}
-	defer dbRepo.Close()
+	defer dbRepoStudent.Close()
 
-	studentService := service.NewStudentService(dbRepo)
+	studentService := service.NewStudentService(dbRepoStudent)
 	studentAPI := api.NewStudentAPI(studentService)
 
 	router := http.NewServeMux()
 
 	router.HandleFunc("/", rootHandler)
 	router.HandleFunc("/api/students", studentAPI.GetStudents)
-	router.HandleFunc("/api/tutors", getTutors)
-
 	router.HandleFunc("/api/students/reports", studentAPI.AddReport)
 	router.HandleFunc("/api/students/reports/edit", studentAPI.EditReport)
+
+	tutorService := service.NewTutorService(dbRepoTutor)
+	tutorAPI := api.NewTutorAPI(tutorService)
+
+	router.HandleFunc("/api/tutors", tutorAPI.GetTutors)
 
 	c := cors.New(cors.Options{
 		AllowedOrigins: []string{"http://localhost:3000"},

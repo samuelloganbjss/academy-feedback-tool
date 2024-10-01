@@ -8,17 +8,17 @@ import (
 	"github.com/samuelloganbjss/academy-feedback-tool/service"
 )
 
-type StudentAPI struct {
-	studentService *service.StudentService
+type TutorAPI struct {
+	tutorService *service.TutorService
 }
 
-func NewStudentAPI(studentService *service.StudentService) *StudentAPI {
-	return &StudentAPI{
-		studentService: studentService,
+func NewTutorAPI(tutorService *service.TutorService) *TutorAPI {
+	return &TutorAPI{
+		tutorService: tutorService,
 	}
 }
-func (api *StudentAPI) GetStudents(writer http.ResponseWriter, request *http.Request) {
-	students, err := api.studentService.GetStudentsService()
+func (api *TutorAPI) GetTutors(writer http.ResponseWriter, request *http.Request) {
+	students, err := api.tutorService.GetTutorsService()
 
 	if err != nil {
 		http.Error(writer, "Internal Server Error", http.StatusInternalServerError)
@@ -27,7 +27,7 @@ func (api *StudentAPI) GetStudents(writer http.ResponseWriter, request *http.Req
 	json.NewEncoder(writer).Encode(students)
 }
 
-func (api *StudentAPI) AddReport(writer http.ResponseWriter, request *http.Request) {
+func (api *TutorAPI) AddReport(writer http.ResponseWriter, request *http.Request) {
 	var report model.Report
 	err := json.NewDecoder(request.Body).Decode(&report)
 
@@ -36,7 +36,7 @@ func (api *StudentAPI) AddReport(writer http.ResponseWriter, request *http.Reque
 		return
 	}
 
-	createdReport, err := api.studentService.AddReportService(report)
+	createdReport, err := api.tutorService.AddReportService(report)
 	if err != nil {
 		http.Error(writer, "Error adding report", http.StatusInternalServerError)
 		return
@@ -46,7 +46,7 @@ func (api *StudentAPI) AddReport(writer http.ResponseWriter, request *http.Reque
 	json.NewEncoder(writer).Encode(createdReport)
 }
 
-func (api *StudentAPI) EditReport(writer http.ResponseWriter, request *http.Request) {
+func (api *TutorAPI) EditReport(writer http.ResponseWriter, request *http.Request) {
 	idStr := request.URL.Query().Get("id")
 	id, err := strconv.Atoi(idStr)
 	if err != nil {
@@ -66,7 +66,7 @@ func (api *StudentAPI) EditReport(writer http.ResponseWriter, request *http.Requ
 
 	tutorID := 1 // Placeholder: Replace with actual tutor ID after authentication
 
-	updatedReport, err := api.studentService.EditReportService(id, newContent.Content, tutorID)
+	updatedReport, err := api.tutorService.EditReportService(id, newContent.Content, tutorID)
 	if err != nil {
 		http.Error(writer, err.Error(), http.StatusUnauthorized)
 		return

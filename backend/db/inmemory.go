@@ -10,6 +10,9 @@ import (
 var students []model.Student
 
 var reports []model.Report
+
+var tutors []model.Tutor
+
 var reportIDCounter = 1
 
 type InMemoryRepository struct{}
@@ -25,11 +28,22 @@ func InitDB() {
 		{ID: 2, Name: "Bob", Department: "Sparck"},
 		{ID: 3, Name: "Bluey", Department: "Consulting"},
 	}
+
+	tutors = []model.Tutor{
+		{ID: 1, Name: "Peter", Department: "Engineering"},
+		{ID: 2, Name: "Clark", Department: "Sparck"},
+		{ID: 3, Name: "Lois", Department: "Consulting"},
+	}
 }
 
 func (repo *InMemoryRepository) GetStudents() ([]model.Student, error) {
 	return students, nil
 }
+
+func (repo *InMemoryRepository) GetTutors() ([]model.Tutor, error) {
+	return tutors, nil
+}
+
 
 func (repo *InMemoryRepository) AddReport(report model.Report) (model.Report, error) {
 	report.ID = reportIDCounter
