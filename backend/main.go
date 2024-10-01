@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"github.com/rs/cors" 
 )
 
 func rootHandler(writer http.ResponseWriter, request *http.Request) {
@@ -16,10 +17,8 @@ func rootHandler(writer http.ResponseWriter, request *http.Request) {
 }
 
 func getTutors(writer http.ResponseWriter, request *http.Request) {
-
 	fmt.Printf("got /api/tutors request\n")
 	io.WriteString(writer, "a list of all tutors from the db")
-
 }
 
 func CorsMiddleware(next http.Handler) http.Handler {
@@ -30,41 +29,52 @@ func CorsMiddleware(next http.Handler) http.Handler {
 	})
 }
 
+func getStudents(writer http.ResponseWriter, request *http.Request) {
+	fmt.Printf("got /api/students  request\n")
+	io.WriteString(writer, "a list of all students from the db")
+}
+
 func initializeDatabase(config config.DatabaseConfig) (student.StudentRepository, error) {
     switch config.Type {
-    // case "postgres":
-    //     connectionString := fmt.Sprintf("user=%s dbname=%s password=%s host=%s sslmode=%s", config.User, config.DBName, config.Password, config.Host, config.SSLMode)
-    //     return postgres.NewPostgresRepository(connectionString)
     case "inmemory":
         return db.NewInMemoryRepository(), nil
     default:
         return nil, fmt.Errorf("unsupported database type: %s", config.Type)
     }
 }
+
 func main() {
 
+	// Use the configuration for the in-memory database from Layering-backend
 	config := config.InMemory
 
-	dbRepo, erro := initializeDatabase(config)
-    if erro != nil {
-        fmt.Println("Error initializing the database:", erro)
-        return
-    }
-    defer dbRepo.Close()
+	// Initialize the database from Layering-backend
+	dbRepo, err := initializeDatabase(config)
+	if err != nil {
+		fmt.Println("Error initializing the database:", err)
+		return
+	}
+	defer dbRepo.Close()
 
 	studentService := service.NewStudentService(dbRepo)
-    studentAPI := api.NewStudentAPI(studentService)
-	
+	studentAPI := api.NewStudentAPI(studentService)
+
 	router := http.NewServeMux()
 
-	router.HandleFunc("GET /", rootHandler)
-	router.HandleFunc("GET /api/students", studentAPI.GetStudents)
-	router.HandleFunc("GET /api/tutors", getTutors)
+	router.HandleFunc("/", rootHandler)
+	router.HandleFunc("/api/students", studentAPI.GetStudents)
+	router.HandleFunc("/api/tutors", getTutors)
+
+	c := cors.New(cors.Options{
+		AllowedOrigins: []string{"http://localhost:3000"},
+		AllowedMethods: []string{"GET", "POST", "OPTIONS"},
+		AllowedHeaders: []string{"Content-Type"},
+	})
+
+	handler := c.Handler(router)
 
 	fmt.Println("Server listening on port 8080...")
-
-	err := http.ListenAndServe(":8080", CorsMiddleware(router))
-
+	err = http.ListenAndServe(":8080", handler)
 	if err != nil {
 		fmt.Println("Error starting server:", err)
 	}
