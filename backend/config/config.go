@@ -1,7 +1,7 @@
 package config
 
 type DatabaseConfig struct {
-	Type     string // e.g., "postgres", "inmemory"
+	Type     string
 	Host     string
 	User     string
 	Password string

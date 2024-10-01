@@ -2,7 +2,8 @@ import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 
 const App = () => {
-  const [students, setStudents] = useState(''); 
+  
+  const [students, setStudents] = useState([]); 
 
   useEffect(() => {
     axios.get('http://localhost:8080/api/students')
@@ -16,7 +17,15 @@ const App = () => {
   return (
     <div>
       <h1>Academy Feedback Tool</h1>
-      <p>{students}</p> {}
+
+      {}
+      {students.map(student => (
+        <div key={student.id}>
+          <p>ID: {student.id}</p>
+          <p>Name: {student.name}</p>
+          <p>Department: {student.department}</p>
+        </div>
+      ))}
     </div>
   );
 };
