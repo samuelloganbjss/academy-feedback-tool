@@ -5,3 +5,11 @@ type Student struct {
 	Name       string `json:"name"`
 	Department string `json:"department"`
 }
+
+type Report struct {
+	ID        int    `json:"id"`
+	StudentID int    `json:"student_id"`
+	TutorID   int    `json:"tutor_id"`
+	Content   string `json:"content"`
+	Timestamp string `json:"timestamp"`
+}
