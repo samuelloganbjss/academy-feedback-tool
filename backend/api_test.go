@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
+	"strconv"
 	"testing"
 
 	"github.com/samuelloganbjss/academy-feedback-tool/api"
@@ -64,4 +65,73 @@ func TestAddReport(t *testing.T) {
 		t.Errorf("Expected report ID to be set, but got nil")
 	}
 
+}
+
+func TestEditReport(t *testing.T) {
+	setup()
+
+	initialReport := map[string]interface{}{
+		"tutorID":   1,
+		"studentID": 1,
+		"content":   "Initial report content",
+	}
+	initialReportJSON, err := json.Marshal(initialReport)
+	if err != nil {
+		t.Fatalf("Could not marshal initial report JSON: %v", err)
+	}
+
+	reqAdd, err := http.NewRequest("POST", "/api/students/reports", bytes.NewBuffer(initialReportJSON))
+	if err != nil {
+		t.Fatal(err)
+	}
+	reqAdd.Header.Set("Content-Type", "application/json")
+
+	rrAdd := httptest.NewRecorder()
+	handlerAdd := http.HandlerFunc(studentAPI.AddReport)
+	handlerAdd.ServeHTTP(rrAdd, reqAdd)
+
+	if status := rrAdd.Code; status != http.StatusOK {
+		t.Errorf("Add report handler returned wrong status code: got %v want %v", status, http.StatusOK)
+	}
+
+	var addedReport map[string]interface{}
+	err = json.Unmarshal(rrAdd.Body.Bytes(), &addedReport)
+	if err != nil {
+		t.Fatalf("Could not unmarshal added report JSON: %v", err)
+	}
+	reportID := int(addedReport["id"].(float64))
+
+	editedContent := map[string]interface{}{
+		"content": "Updated report content",
+	}
+	editedContentJSON, err := json.Marshal(editedContent)
+	if err != nil {
+		t.Fatalf("Could not marshal edited report JSON: %v", err)
+	}
+
+	editURL := "/api/students/reports/edit?id=" + strconv.Itoa(reportID)
+	reqEdit, err := http.NewRequest("PUT", editURL, bytes.NewBuffer(editedContentJSON))
+	if err != nil {
+		t.Fatal(err)
+	}
+	reqEdit.Header.Set("Content-Type", "application/json")
+
+	rrEdit := httptest.NewRecorder()
+	handlerEdit := http.HandlerFunc(studentAPI.EditReport)
+	handlerEdit.ServeHTTP(rrEdit, reqEdit)
+
+	if status := rrEdit.Code; status != http.StatusOK {
+		t.Errorf("Edit report handler returned wrong status code: got %v want %v", status, http.StatusOK)
+		t.Logf("Response body: %s", rrEdit.Body.String())
+	}
+
+	var updatedReport map[string]interface{}
+	err = json.Unmarshal(rrEdit.Body.Bytes(), &updatedReport)
+	if err != nil {
+		t.Fatalf("Could not unmarshal edited report JSON: %v", err)
+	}
+
+	if updatedReport["content"] != "Updated report content" {
+		t.Errorf("handler returned wrong report content: got %v want %v", updatedReport["content"], "Updated report content")
+	}
 }
