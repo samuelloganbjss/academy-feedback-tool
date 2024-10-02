@@ -6,6 +6,7 @@ import (
 	"net/http"
 
 	"github.com/rs/cors"
+	middleware "github.com/samuelloganbjss/academy-feedback-tool/admin"
 	"github.com/samuelloganbjss/academy-feedback-tool/api"
 	"github.com/samuelloganbjss/academy-feedback-tool/config"
 	"github.com/samuelloganbjss/academy-feedback-tool/db"
@@ -36,13 +37,22 @@ func getStudents(writer http.ResponseWriter, request *http.Request) {
 	io.WriteString(writer, "a list of all students from the db")
 }
 
-func initializeDatabase(config config.DatabaseConfig) (student.StudentRepository, tutor.TutorRepository , error) {
+func initializeDatabase(config config.DatabaseConfig) (student.StudentRepository, tutor.TutorRepository, error) {
 	switch config.Type {
 	case "inmemory":
 		return db.NewInMemoryRepository(), db.NewInMemoryRepository(), nil
 	default:
 		return nil, nil, fmt.Errorf("unsupported database type: %s", config.Type)
 	}
+}
+
+func getTutorRoleFromRequest(r *http.Request) (string, error) {
+	role := r.Header.Get("Role")
+
+	if role == "" {
+		return "", fmt.Errorf("role not found")
+	}
+	return role, nil
 }
 
 func main() {
@@ -61,14 +71,19 @@ func main() {
 
 	router := http.NewServeMux()
 
+	// Public routes
 	router.HandleFunc("/", rootHandler)
 	router.HandleFunc("/api/students", studentAPI.GetStudents)
-	router.HandleFunc("/api/students/reports", studentAPI.AddReport)
-	router.HandleFunc("/api/students/reports/edit", studentAPI.EditReport)
 
+	// Protected routes (only admins can add and edit reports)
+	router.Handle("/api/students/reports", middleware.AdminMiddleware(getTutorRoleFromRequest)(http.HandlerFunc(studentAPI.AddReport)))
+	router.Handle("/api/students/reports/edit", middleware.AdminMiddleware(getTutorRoleFromRequest)(http.HandlerFunc(studentAPI.EditReport)))
+
+	// Tutor API
 	tutorService := service.NewTutorService(dbRepoTutor)
 	tutorAPI := api.NewTutorAPI(tutorService)
 
+	// Public route for tutors
 	router.HandleFunc("/api/tutors", tutorAPI.GetTutors)
 
 	c := cors.New(cors.Options{
