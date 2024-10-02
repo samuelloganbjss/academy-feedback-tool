@@ -50,5 +50,8 @@ func (s *StudentService) GetStudentReportsService(studentID int) ([]model.Report
 	if err != nil {
 		return nil, errors.New("error retrieving reports for the student")
 	}
+
+	fmt.Printf("Fetched reports for student ID %d: %+v\n", studentID, reports)
+
 	return reports, nil
 }

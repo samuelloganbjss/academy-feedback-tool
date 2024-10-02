@@ -118,17 +118,30 @@ func (api *StudentAPI) EditReport(writer http.ResponseWriter, request *http.Requ
 }
 
 func (api *StudentAPI) GetStudentReports(writer http.ResponseWriter, request *http.Request) {
-	studentID, err := strconv.Atoi(request.URL.Query().Get("student_id"))
+	studentIDStr := request.URL.Query().Get("student_id")
+
+	fmt.Println("Received student_id:", studentIDStr)
+
+	if studentIDStr == "" {
+		http.Error(writer, "student_id is required", http.StatusBadRequest)
+		return
+	}
+
+	studentID, err := strconv.Atoi(studentIDStr)
 	if err != nil {
-		http.Error(writer, "Invalid student ID", http.StatusBadRequest)
+		http.Error(writer, "Invalid student_id", http.StatusBadRequest)
 		return
 	}
 
 	reports, err := api.studentService.GetStudentReportsService(studentID)
-	if err != nil {
-		http.Error(writer, "Error fetching student reports", http.StatusInternalServerError)
+	if err != nil || reports == nil {
+		writer.Header().Set("Content-Type", "application/json")
+		writer.WriteHeader(http.StatusOK)
+		writer.Write([]byte("[]"))
 		return
 	}
+
+	fmt.Printf("Reports for student %d: %+v\n", studentID, reports)
 
 	writer.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(writer).Encode(reports)

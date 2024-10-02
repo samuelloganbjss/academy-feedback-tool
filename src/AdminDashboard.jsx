@@ -33,6 +33,7 @@ const AdminDashboard = () => {
     };
 
     const fetchReports = async (studentId) => {
+        console.log(`Fetching reports for student ID: ${studentId}`);
         axios.get(`http://localhost:8080/admin/students/reports?student_id=${studentId}`, {
             headers: {
                 'Role': 'admin'
