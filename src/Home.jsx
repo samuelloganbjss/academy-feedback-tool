@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 
-const App = () => {
+const Home = () => {
   const [students, setStudents] = useState([]);
   const [selectedStudent, setSelectedStudent] = useState(null);
   const [reportContent, setReportContent] = useState('');
@@ -53,5 +53,5 @@ const App = () => {
   );
 };
 
-export default App;
+export default Home;
 

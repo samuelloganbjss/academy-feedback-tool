@@ -28,6 +28,14 @@ func (s *TutorService) GetTutorsService() ([]model.Tutor, error) {
 	return tutors, nil
 }
 
+func (s *TutorService) DeleteTutorService(id int) (int,error) {
+	return s.repository.DeleteSingleTutor(id)
+}
+
+func (s *TutorService) AddTutorService(tutor model.Tutor) (model.Tutor, error) {
+	return s.repository.AddTutor(tutor)
+}
+
 func (s *TutorService) AddReportService(report model.Report) (model.Report, error) {
 	return s.repository.AddReport(report)
 }

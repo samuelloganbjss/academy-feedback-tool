@@ -73,23 +73,32 @@ func main() {
 
 	// Public routes
 	router.HandleFunc("/", rootHandler)
-	router.HandleFunc("/api/students", studentAPI.GetStudents)
+	router.HandleFunc("GET /api/students", studentAPI.GetStudents)
 
 	// Protected routes (only admins can add and edit reports)
 	router.Handle("/api/students/reports", middleware.AdminMiddleware(getTutorRoleFromRequest)(http.HandlerFunc(studentAPI.AddReport)))
 	router.Handle("/api/students/reports/edit", middleware.AdminMiddleware(getTutorRoleFromRequest)(http.HandlerFunc(studentAPI.EditReport)))
 
+	// Protected route to add and delete Students and Tutors
+
+	router.Handle("POST /api/students", middleware.AdminMiddleware(getTutorRoleFromRequest)(http.HandlerFunc(studentAPI.AddStudent)))
+	router.Handle("DELETE /api/students/remove/{id}", middleware.AdminMiddleware(getTutorRoleFromRequest)(http.HandlerFunc(studentAPI.DeleteSingleStudent)))
+	
 	// Tutor API
 	tutorService := service.NewTutorService(dbRepoTutor)
 	tutorAPI := api.NewTutorAPI(tutorService)
 
 	// Public route for tutors
-	router.HandleFunc("/api/tutors", tutorAPI.GetTutors)
+	router.HandleFunc("GET /api/tutors", tutorAPI.GetTutors)
+
+	// Protected route to create and delete tutors
+	router.Handle("POST /api/tutors", middleware.AdminMiddleware(getTutorRoleFromRequest)(http.HandlerFunc(tutorAPI.AddTutor)))
+	router.Handle("DELETE /api/tutors/remove/{id}", middleware.AdminMiddleware(getTutorRoleFromRequest)(http.HandlerFunc(tutorAPI.DeleteSingleTutor)))
 
 	c := cors.New(cors.Options{
 		AllowedOrigins: []string{"http://localhost:3000"},
-		AllowedMethods: []string{"GET", "POST", "OPTIONS"},
-		AllowedHeaders: []string{"Content-Type"},
+		AllowedMethods: []string{"GET", "POST", "DELETE", "OPTIONS"},
+		AllowedHeaders: []string{"Content-Type","Role"},
 	})
 
 	handler := c.Handler(router)

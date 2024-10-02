@@ -14,6 +14,8 @@ var reports []model.Report
 var tutors []model.Tutor
 
 var reportIDCounter = 1
+var studentIDCounter = 4
+var tutorIDCounter = 4
 
 type InMemoryRepository struct{}
 
@@ -44,6 +46,40 @@ func (repo *InMemoryRepository) GetTutors() ([]model.Tutor, error) {
 	return tutors, nil
 }
 
+func (repo *InMemoryRepository) AddStudent(student model.Student) (model.Student, error) {
+	student.ID = studentIDCounter
+	studentIDCounter++
+	students = append(students, student)
+	return student, nil
+}
+
+func (repo *InMemoryRepository) AddTutor(tutor model.Tutor) (model.Tutor, error) {
+	tutor.ID = tutorIDCounter
+	tutorIDCounter++
+	tutors = append(tutors, tutor)
+	return tutor, nil
+}
+
+func (repo *InMemoryRepository) DeleteSingleTutor(id int) (int, error) {
+	for i, tutor := range tutors {
+		if tutor.ID == id {
+
+			tutors = append(tutors[:i], tutors[i+1:]...)
+			return tutor.ID, nil 
+		}
+	}
+	return 0, errors.New("tutor not found")
+}
+
+func (repo *InMemoryRepository) DeleteSingleStudent(id int) (int, error) {
+	for i, student := range students {
+		if student.ID == id {
+			students = append(students[:i], students[i+1:]...)
+			return student.ID, nil
+		}
+	}
+	return 0, errors.New("student not found")
+}
 
 func (repo *InMemoryRepository) AddReport(report model.Report) (model.Report, error) {
 	report.ID = reportIDCounter

@@ -29,6 +29,14 @@ func (s *StudentService) GetStudentsService() ([]model.Student, error) {
 	return students, nil
 }
 
+func (s *StudentService) DeleteStudentService(id int) (int,error) {
+	return s.repository.DeleteSingleStudent(id)
+}
+
+func (s *StudentService) AddStudentService(student model.Student) (model.Student, error) {
+	return s.repository.AddStudent(student)
+}
+
 func (s *StudentService) AddReportService(report model.Report) (model.Report, error) {
 	return s.repository.AddReport(report)
 }
