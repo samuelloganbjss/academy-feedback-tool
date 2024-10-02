@@ -29,7 +29,7 @@ func (s *StudentService) GetStudentsService() ([]model.Student, error) {
 	return students, nil
 }
 
-func (s *StudentService) DeleteStudentService(id int) (int,error) {
+func (s *StudentService) DeleteStudentService(id int) (int, error) {
 	return s.repository.DeleteSingleStudent(id)
 }
 
@@ -43,4 +43,15 @@ func (s *StudentService) AddReportService(report model.Report) (model.Report, er
 
 func (s *StudentService) EditReportService(id int, newContent string, tutorID int) (model.Report, error) {
 	return s.repository.EditReport(id, newContent, tutorID)
+}
+
+func (s *StudentService) GetStudentReportsService(studentID int) ([]model.Report, error) {
+	reports, err := s.repository.GetReportsByStudentID(studentID)
+	if err != nil {
+		return nil, errors.New("error retrieving reports for the student")
+	}
+
+	fmt.Printf("Fetched reports for student ID %d: %+v\n", studentID, reports)
+
+	return reports, nil
 }

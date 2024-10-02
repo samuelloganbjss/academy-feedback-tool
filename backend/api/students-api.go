@@ -2,11 +2,12 @@ package api
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"strconv"
+
 	"github.com/samuelloganbjss/academy-feedback-tool/model"
 	"github.com/samuelloganbjss/academy-feedback-tool/service"
-	"fmt"
 )
 
 type StudentAPI struct {
@@ -52,18 +53,18 @@ func (api *StudentAPI) DeleteSingleStudent(writer http.ResponseWriter, request *
 	id, err := api.parseId(request.PathValue("id"))
 
 	if err != nil {
-        http.Error(writer, "Bad Request ID", http.StatusBadRequest)
-        return
-    }
+		http.Error(writer, "Bad Request ID", http.StatusBadRequest)
+		return
+	}
 
-    _, err = api.studentService.DeleteStudentService(id)
-    
-    if err != nil {
-        http.Error(writer, "Could not delete student", http.StatusBadRequest)
-        return
-    }
+	_, err = api.studentService.DeleteStudentService(id)
 
-    writer.WriteHeader(http.StatusOK)
+	if err != nil {
+		http.Error(writer, "Could not delete student", http.StatusBadRequest)
+		return
+	}
+
+	writer.WriteHeader(http.StatusOK)
 
 }
 
@@ -116,14 +117,44 @@ func (api *StudentAPI) EditReport(writer http.ResponseWriter, request *http.Requ
 	json.NewEncoder(writer).Encode(updatedReport)
 }
 
-func (api *StudentAPI) parseId(idStr string) (id int, err error){
-    
-    id, err = strconv.Atoi(idStr)
-    if err != nil {
-        fmt.Println("Error parsing ID:", err)
-        return 0, err
-    }
+func (api *StudentAPI) GetStudentReports(writer http.ResponseWriter, request *http.Request) {
+	studentIDStr := request.URL.Query().Get("student_id")
 
-    return id, nil
+	fmt.Println("Received student_id:", studentIDStr)
+
+	if studentIDStr == "" {
+		http.Error(writer, "student_id is required", http.StatusBadRequest)
+		return
+	}
+
+	studentID, err := strconv.Atoi(studentIDStr)
+	if err != nil {
+		http.Error(writer, "Invalid student_id", http.StatusBadRequest)
+		return
+	}
+
+	reports, err := api.studentService.GetStudentReportsService(studentID)
+	if err != nil || reports == nil {
+		writer.Header().Set("Content-Type", "application/json")
+		writer.WriteHeader(http.StatusOK)
+		writer.Write([]byte("[]"))
+		return
+	}
+
+	fmt.Printf("Reports for student %d: %+v\n", studentID, reports)
+
+	writer.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(writer).Encode(reports)
+}
+
+func (api *StudentAPI) parseId(idStr string) (id int, err error) {
+
+	id, err = strconv.Atoi(idStr)
+	if err != nil {
+		fmt.Println("Error parsing ID:", err)
+		return 0, err
+	}
+
+	return id, nil
 
 }
