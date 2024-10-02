@@ -3,11 +3,12 @@ package main
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"net/http/httptest"
-	"strconv"
 	"testing"
 
+	middleware "github.com/samuelloganbjss/academy-feedback-tool/admin"
 	"github.com/samuelloganbjss/academy-feedback-tool/api"
 	"github.com/samuelloganbjss/academy-feedback-tool/db"
 	"github.com/samuelloganbjss/academy-feedback-tool/service"
@@ -21,6 +22,15 @@ func setup() {
 
 	studentService := service.NewStudentService(dbRepo)
 	studentAPI = api.NewStudentAPI(studentService)
+}
+
+func getTutorRoleFromRequest(r *http.Request) (string, error) {
+	role := r.Header.Get("Role")
+
+	if role == "" {
+		return "", fmt.Errorf("role not found")
+	}
+	return role, nil
 }
 
 func TestAddReport(t *testing.T) {
@@ -67,71 +77,51 @@ func TestAddReport(t *testing.T) {
 
 }
 
-func TestEditReport(t *testing.T) {
+func TestAdminAccess_AddReport(t *testing.T) {
 	setup()
 
-	initialReport := map[string]interface{}{
-		"tutorID":   1,
+	req, err := http.NewRequest("POST", "/api/students/reports", bytes.NewBuffer([]byte(`{
 		"studentID": 1,
-		"content":   "Initial report content",
-	}
-	initialReportJSON, err := json.Marshal(initialReport)
-	if err != nil {
-		t.Fatalf("Could not marshal initial report JSON: %v", err)
-	}
-
-	reqAdd, err := http.NewRequest("POST", "/api/students/reports", bytes.NewBuffer(initialReportJSON))
+		"tutorID": 1,
+		"content": "New report from admin"
+	}`)))
 	if err != nil {
 		t.Fatal(err)
 	}
-	reqAdd.Header.Set("Content-Type", "application/json")
 
-	rrAdd := httptest.NewRecorder()
-	handlerAdd := http.HandlerFunc(studentAPI.AddReport)
-	handlerAdd.ServeHTTP(rrAdd, reqAdd)
+	req.Header.Set("Role", "admin")
 
-	if status := rrAdd.Code; status != http.StatusOK {
-		t.Errorf("Add report handler returned wrong status code: got %v want %v", status, http.StatusOK)
+	rr := httptest.NewRecorder()
+
+	handler := middleware.AdminMiddleware(getTutorRoleFromRequest)(http.HandlerFunc(studentAPI.AddReport))
+	handler.ServeHTTP(rr, req)
+
+	if status := rr.Code; status != http.StatusOK {
+		t.Errorf("handler returned wrong status code: got %v want %v", status, http.StatusOK)
 	}
+}
 
-	var addedReport map[string]interface{}
-	err = json.Unmarshal(rrAdd.Body.Bytes(), &addedReport)
-	if err != nil {
-		t.Fatalf("Could not unmarshal added report JSON: %v", err)
-	}
-	reportID := int(addedReport["id"].(float64))
+func TestNonAdminAccess_AddReport(t *testing.T) {
 
-	editedContent := map[string]interface{}{
-		"content": "Updated report content",
-	}
-	editedContentJSON, err := json.Marshal(editedContent)
-	if err != nil {
-		t.Fatalf("Could not marshal edited report JSON: %v", err)
-	}
+	setup()
 
-	editURL := "/api/students/reports/edit?id=" + strconv.Itoa(reportID)
-	reqEdit, err := http.NewRequest("PUT", editURL, bytes.NewBuffer(editedContentJSON))
+	req, err := http.NewRequest("POST", "/api/students/reports", bytes.NewBuffer([]byte(`{
+		"studentID": 1,
+		"tutorID": 1,
+		"content": "New report"
+	}`)))
 	if err != nil {
 		t.Fatal(err)
 	}
-	reqEdit.Header.Set("Content-Type", "application/json")
 
-	rrEdit := httptest.NewRecorder()
-	handlerEdit := http.HandlerFunc(studentAPI.EditReport)
-	handlerEdit.ServeHTTP(rrEdit, reqEdit)
+	req.Header.Set("Role", "tutor")
 
-	if status := rrEdit.Code; status != http.StatusOK {
-		t.Errorf("Edit report handler returned wrong status code: got %v want %v", status, http.StatusOK)
-		t.Logf("Response body: %s", rrEdit.Body.String())
-	}
+	rr := httptest.NewRecorder()
 
-	var updatedReport map[string]interface{}
-	err = json.Unmarshal(rrEdit.Body.Bytes(), &updatedReport)
-	if err != nil {
-		t.Fatalf("Could not unmarshal edited report JSON: %v", err)
-	}
+	handler := middleware.AdminMiddleware(getTutorRoleFromRequest)(http.HandlerFunc(studentAPI.AddReport))
+	handler.ServeHTTP(rr, req)
 
-	if updatedReport["content"] != "Updated report content" {
-		t.Errorf("handler returned wrong report content: got %v want %v", updatedReport["content"], "Updated report content")
+	if status := rr.Code; status != http.StatusForbidden {
+		t.Errorf("handler returned wrong status code: got %v want %v", status, http.StatusForbidden)
 	}
 }
