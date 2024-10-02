@@ -3,7 +3,6 @@ package main
 import (
 	"bytes"
 	"encoding/json"
-	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -22,15 +21,6 @@ func setup() {
 
 	studentService := service.NewStudentService(dbRepo)
 	studentAPI = api.NewStudentAPI(studentService)
-}
-
-func getTutorRoleFromRequest(r *http.Request) (string, error) {
-	role := r.Header.Get("Role")
-
-	if role == "" {
-		return "", fmt.Errorf("role not found")
-	}
-	return role, nil
 }
 
 func TestAddReport(t *testing.T) {
