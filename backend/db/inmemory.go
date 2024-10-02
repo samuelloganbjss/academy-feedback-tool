@@ -2,6 +2,7 @@ package db
 
 import (
 	"errors"
+	"sort"
 	"time"
 
 	"github.com/samuelloganbjss/academy-feedback-tool/model"
@@ -65,7 +66,7 @@ func (repo *InMemoryRepository) DeleteSingleTutor(id int) (int, error) {
 		if tutor.ID == id {
 
 			tutors = append(tutors[:i], tutors[i+1:]...)
-			return tutor.ID, nil 
+			return tutor.ID, nil
 		}
 	}
 	return 0, errors.New("tutor not found")
@@ -84,7 +85,7 @@ func (repo *InMemoryRepository) DeleteSingleStudent(id int) (int, error) {
 func (repo *InMemoryRepository) AddReport(report model.Report) (model.Report, error) {
 	report.ID = reportIDCounter
 	reportIDCounter++
-	report.Timestamp = time.Now().Format(time.RFC3339)
+	report.Timestamp = time.Now()
 	reports = append(reports, report)
 	return report, nil
 }
@@ -99,13 +100,19 @@ func (repo *InMemoryRepository) EditReport(id int, newContent string, tutorID in
 	return model.Report{}, errors.New("report not found or tutor unauthorized")
 }
 
-func (repo *InMemoryRepository) GetReportsByStudent(studentID int) ([]model.Report, error) {
+func (repo *InMemoryRepository) GetReportsByStudentID(studentID int) ([]model.Report, error) {
 	var studentReports []model.Report
-	for _, rpt := range reports {
-		if rpt.StudentID == studentID {
-			studentReports = append(studentReports, rpt)
+	for _, report := range reports {
+		if report.StudentID == studentID {
+			studentReports = append(studentReports, report)
 		}
 	}
+
+	// Sort reports by Timestamp
+	sort.Slice(studentReports, func(i, j int) bool {
+		return studentReports[i].Timestamp.Before(studentReports[j].Timestamp)
+	})
+
 	return studentReports, nil
 }
 

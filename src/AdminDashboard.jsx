@@ -8,6 +8,8 @@ const AdminDashboard = () => {
     const [studentDepartment, setStudentDepartment] = useState('');
     const [tutorName, setTutorName] = useState('');
     const [tutorDepartment, setTutorDepartment] = useState('');
+    const [reports, setReports] = useState({});
+    const [selectedStudentId, setSelectedStudentId] = useState(null);
 
     useEffect(() => {
         fetchStudents();
@@ -30,87 +32,97 @@ const AdminDashboard = () => {
             .catch(error => console.error('Error fetching tutors:', error));
     };
 
+    const fetchReports = async (studentId) => {
+        axios.get(`http://localhost:8080/admin/students/reports?student_id=${studentId}`, {
+            headers: {
+                'Role': 'admin'
+            }
+        })
+        .then(response => {
+            console.log('Reports fetched:', response.data);
+            setReports((prevReports) => ({
+                ...prevReports,
+                [studentId]: response.data,
+            }));
+        })
+        .catch(error => console.error('Error fetching reports:', error));
+    };
+
     const addStudent = async () => {
         if (studentName && studentDepartment) {
-
-            axios.post('http://localhost:8080/api/students',
-                {
-                    name: studentName,
-                    department: studentDepartment
-                },
-                {
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Role': 'admin',
-                    }
-                })
-                .then(response => {
-                    console.log('student added:', response.data);
-                    setStudentName('');
-                    setStudentDepartment('');
-                    fetchStudents();
-                })
-                .catch(error => console.error('Error adding student:', error));
+            axios.post('http://localhost:8080/api/students', {
+                name: studentName,
+                department: studentDepartment
+            }, {
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Role': 'admin',
+                }
+            })
+            .then(response => {
+                console.log('student added:', response.data);
+                setStudentName('');
+                setStudentDepartment('');
+                fetchStudents();
+            })
+            .catch(error => console.error('Error adding student:', error));
         }
-        setStudentName('');
-        setStudentDepartment('');
-        fetchStudents();
     };
 
     const addTutor = async () => {
         if (tutorName && tutorDepartment) {
-
-            axios.post('http://localhost:8080/api/tutors',
-                {
-                    name: tutorName,
-                    department: tutorDepartment
-                },
-                {
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Role': 'admin',
-                    }
-                })
-                .then(response => {
-                    console.log('Tutor added:', response.data);
-                    setTutorName('');
-                    setTutorDepartment('');
-                    fetchTutors();
-                })
-                .catch(error => console.error('Error adding tutor:', error));
-
+            axios.post('http://localhost:8080/api/tutors', {
+                name: tutorName,
+                department: tutorDepartment
+            }, {
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Role': 'admin',
+                }
+            })
+            .then(response => {
+                console.log('Tutor added:', response.data);
+                setTutorName('');
+                setTutorDepartment('');
+                fetchTutors();
+            })
+            .catch(error => console.error('Error adding tutor:', error));
         }
-        setTutorName('');
-        setTutorDepartment('');
-        fetchTutors();
     };
 
     const removeStudent = async (id) => {
-        axios.delete(`http://localhost:8080/api/students/remove/${id}`,
-            {
-                headers: {
-                    'Role': 'admin',
-                }
-            })
-            .then(response => {
-                console.log('Student removed:', response.data);
-                fetchStudents();
-            })
-            .catch(error => console.error('Error removing student:', error));
+        axios.delete(`http://localhost:8080/api/students/remove/${id}`, {
+            headers: {
+                'Role': 'admin',
+            }
+        })
+        .then(response => {
+            console.log('Student removed:', response.data);
+            fetchStudents();
+        })
+        .catch(error => console.error('Error removing student:', error));
     };
 
     const removeTutor = async (id) => {
-        axios.delete(`http://localhost:8080/api/tutors/remove/${id}`,
-            {
-                headers: {
-                    'Role': 'admin',
-                }
-            })
-            .then(response => {
-                console.log('Tutor removed:', response.data);
-                fetchTutors();
-            })
-            .catch(error => console.error('Error removing tutor:', error));
+        axios.delete(`http://localhost:8080/api/tutors/remove/${id}`, {
+            headers: {
+                'Role': 'admin',
+            }
+        })
+        .then(response => {
+            console.log('Tutor removed:', response.data);
+            fetchTutors();
+        })
+        .catch(error => console.error('Error removing tutor:', error));
+    };
+
+    const toggleViewReports = (studentId) => {
+        if (selectedStudentId === studentId) {
+            setSelectedStudentId(null); 
+        } else {
+            setSelectedStudentId(studentId); 
+            fetchReports(studentId); 
+        }
     };
 
     return (
@@ -138,6 +150,23 @@ const AdminDashboard = () => {
                     <li key={student.id}>
                         {student.name} ({student.department})
                         <button onClick={() => removeStudent(student.id)}>Remove</button>
+                        <button onClick={() => toggleViewReports(student.id)}>
+                            {selectedStudentId === student.id ? 'Hide Reports' : 'View Reports'}
+                        </button>
+
+                        {selectedStudentId === student.id && reports[student.id] && (
+                            <ul>
+                                {reports[student.id].length > 0 ? (
+                                    reports[student.id].map((report) => (
+                                        <li key={report.id}>
+                                            {report.content} - {new Date(report.timestamp).toLocaleString()}
+                                        </li>
+                                    ))
+                                ) : (
+                                    <li>No reports available for this student.</li>
+                                )}
+                            </ul>
+                        )}
                     </li>
                 ))}
             </ul>
