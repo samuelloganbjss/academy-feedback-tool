@@ -37,6 +37,7 @@ func InitDB() {
 		{ID: 2, Name: "Clark", Department: "Sparck"},
 		{ID: 3, Name: "Lois", Department: "Consulting"},
 	}
+
 }
 
 func (repo *InMemoryRepository) GetStudents() ([]model.Student, error) {
