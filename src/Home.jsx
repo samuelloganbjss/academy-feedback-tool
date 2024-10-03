@@ -39,31 +39,41 @@ const Home = () => {
   };
 
   return (
-    <div>
-      <h1>Academy Feedback Tool</h1>
-
-      <h2>Select a Student:</h2>
-      <select onChange={(e) => {
-        const selectedValue = e.target.value;
-        setSelectedStudent(selectedValue ? parseInt(selectedValue, 10) : null);
-        console.log(selectedValue); 
-      }
-      }>
-        <option value="">--Select a student--</option>
-        {students.map(student => (
-          <option key={student.id} value={student.id}>
-            {student.name}
-          </option>
-        ))}
-      </select>
-
-      <h2>Add Report:</h2>
-      <textarea
-        value={reportContent}
-        onChange={(e) => setReportContent(e.target.value)}
-        placeholder="Enter report here..."
-      />
-      <button onClick={handleReportSubmit}>Submit Report</button>
+    <div className="container mt-5">
+      <h1 className="text-center mb-4">Academy Feedback Tool</h1>
+  
+      <div className="mb-4">
+        <h2>Select a Student:</h2>
+        <select
+          className="form-select mb-3"
+          onChange={(e) => {
+            const selectedValue = e.target.value;
+            setSelectedStudent(selectedValue ? parseInt(selectedValue, 10) : null);
+            console.log(selectedValue);
+          }}
+        >
+          <option value="">--Select a student--</option>
+          {students.map(student => (
+            <option key={student.id} value={student.id}>
+              {student.name}
+            </option>
+          ))}
+        </select>
+      </div>
+  
+      <div className="mb-4">
+        <h2>Add Report:</h2>
+        <textarea
+          className="form-control mb-3"
+          value={reportContent}
+          onChange={(e) => setReportContent(e.target.value)}
+          placeholder="Enter report here..."
+          rows="5"
+        />
+        <button onClick={handleReportSubmit} className="btn btn-primary">
+          Submit Report
+        </button>
+      </div>
     </div>
   );
 };
