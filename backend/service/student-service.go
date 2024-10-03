@@ -37,21 +37,4 @@ func (s *StudentService) AddStudentService(student model.Student) (model.Student
 	return s.repository.AddStudent(student)
 }
 
-func (s *StudentService) AddReportService(report model.Report) (model.Report, error) {
-	return s.repository.AddReport(report)
-}
 
-func (s *StudentService) EditReportService(id int, newContent string, tutorID int) (model.Report, error) {
-	return s.repository.EditReport(id, newContent, tutorID)
-}
-
-func (s *StudentService) GetStudentReportsService(studentID int) ([]model.Report, error) {
-	reports, err := s.repository.GetReportsByStudentID(studentID)
-	if err != nil {
-		return nil, errors.New("error retrieving reports for the student")
-	}
-
-	fmt.Printf("Fetched reports for student ID %d: %+v\n", studentID, reports)
-
-	return reports, nil
-}

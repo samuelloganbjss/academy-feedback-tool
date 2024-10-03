@@ -87,8 +87,8 @@ func (api *TutorAPI) AddReport(writer http.ResponseWriter, request *http.Request
 }
 
 func (api *TutorAPI) EditReport(writer http.ResponseWriter, request *http.Request) {
-	idStr := request.URL.Query().Get("id")
-	id, err := strconv.Atoi(idStr)
+	studentID, err := api.parseId(request.PathValue("id"))
+
 	if err != nil {
 		http.Error(writer, "Invalid ID", http.StatusBadRequest)
 		return
@@ -106,7 +106,7 @@ func (api *TutorAPI) EditReport(writer http.ResponseWriter, request *http.Reques
 
 	tutorID := 1 // Placeholder: Replace with actual tutor ID after authentication
 
-	updatedReport, err := api.tutorService.EditReportService(id, newContent.Content, tutorID)
+	updatedReport, err := api.tutorService.EditReportService(studentID, newContent.Content, tutorID)
 	if err != nil {
 		http.Error(writer, err.Error(), http.StatusUnauthorized)
 		return
@@ -114,6 +114,29 @@ func (api *TutorAPI) EditReport(writer http.ResponseWriter, request *http.Reques
 
 	writer.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(writer).Encode(updatedReport)
+}
+
+
+func (api *TutorAPI) GetStudentReports(writer http.ResponseWriter, request *http.Request) {
+	studentID, err := api.parseId(request.PathValue("id"))
+
+	if err != nil {
+		http.Error(writer, "Invalid student_id", http.StatusBadRequest)
+		return
+	}
+
+	reports, err := api.tutorService.GetStudentReportsService(studentID)
+	if err != nil || reports == nil {
+		writer.Header().Set("Content-Type", "application/json")
+		writer.WriteHeader(http.StatusOK)
+		writer.Write([]byte("[]"))
+		return
+	}
+
+	fmt.Printf("Reports for student %d: %+v\n", studentID, reports)
+
+	writer.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(writer).Encode(reports)
 }
 
 func (api *TutorAPI) parseId(idStr string) (id int, err error){

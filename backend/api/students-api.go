@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"net/http"
 	"strconv"
-
 	"github.com/samuelloganbjss/academy-feedback-tool/model"
 	"github.com/samuelloganbjss/academy-feedback-tool/service"
 )
@@ -66,85 +65,6 @@ func (api *StudentAPI) DeleteSingleStudent(writer http.ResponseWriter, request *
 
 	writer.WriteHeader(http.StatusOK)
 
-}
-
-func (api *StudentAPI) AddReport(writer http.ResponseWriter, request *http.Request) {
-	var report model.Report
-	err := json.NewDecoder(request.Body).Decode(&report)
-
-	if err != nil {
-		http.Error(writer, "Bad Request", http.StatusBadRequest)
-		return
-	}
-
-	createdReport, err := api.studentService.AddReportService(report)
-	if err != nil {
-		http.Error(writer, "Error adding report", http.StatusInternalServerError)
-		return
-	}
-
-	writer.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(writer).Encode(createdReport)
-}
-
-func (api *StudentAPI) EditReport(writer http.ResponseWriter, request *http.Request) {
-	idStr := request.URL.Query().Get("id")
-	id, err := strconv.Atoi(idStr)
-	if err != nil {
-		http.Error(writer, "Invalid ID", http.StatusBadRequest)
-		return
-	}
-
-	var newContent struct {
-		Content string `json:"content"`
-	}
-
-	err = json.NewDecoder(request.Body).Decode(&newContent)
-	if err != nil {
-		http.Error(writer, "Bad Request", http.StatusBadRequest)
-		return
-	}
-
-	tutorID := 1 // Placeholder: Replace with actual tutor ID after authentication
-
-	updatedReport, err := api.studentService.EditReportService(id, newContent.Content, tutorID)
-	if err != nil {
-		http.Error(writer, err.Error(), http.StatusUnauthorized)
-		return
-	}
-
-	writer.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(writer).Encode(updatedReport)
-}
-
-func (api *StudentAPI) GetStudentReports(writer http.ResponseWriter, request *http.Request) {
-	studentIDStr := request.URL.Query().Get("student_id")
-
-	fmt.Println("Received student_id:", studentIDStr)
-
-	if studentIDStr == "" {
-		http.Error(writer, "student_id is required", http.StatusBadRequest)
-		return
-	}
-
-	studentID, err := strconv.Atoi(studentIDStr)
-	if err != nil {
-		http.Error(writer, "Invalid student_id", http.StatusBadRequest)
-		return
-	}
-
-	reports, err := api.studentService.GetStudentReportsService(studentID)
-	if err != nil || reports == nil {
-		writer.Header().Set("Content-Type", "application/json")
-		writer.WriteHeader(http.StatusOK)
-		writer.Write([]byte("[]"))
-		return
-	}
-
-	fmt.Printf("Reports for student %d: %+v\n", studentID, reports)
-
-	writer.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(writer).Encode(reports)
 }
 
 func (api *StudentAPI) parseId(idStr string) (id int, err error) {
