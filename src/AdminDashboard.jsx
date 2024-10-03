@@ -10,6 +10,8 @@ const AdminDashboard = () => {
     const [tutorDepartment, setTutorDepartment] = useState('');
     const [reports, setReports] = useState({});
     const [selectedStudentId, setSelectedStudentId] = useState(null);
+    const [fullReport, setFullReport] = useState(null);  
+
 
     useEffect(() => {
         fetchStudents();
@@ -125,6 +127,19 @@ const AdminDashboard = () => {
             fetchReports(studentId); 
         }
     };
+       
+    const generateStudentReport = async (studentId) => {
+        try {
+            const response = await axios.get(`http://localhost:8080/admin/students/reports?student_id=${studentId}`, {
+                headers: {
+                    'Role': 'admin'
+                }
+            });
+            setSelectedStudentId(response.data);  
+        } catch (error) {
+            console.error(`Error generating report for student ID ${studentId}:`, error);
+        }
+    };
 
     return (
         <div>
@@ -147,30 +162,35 @@ const AdminDashboard = () => {
 
             <h2>Students</h2>
             <ul>
-                {students.map((student) => (
-                    <li key={student.id}>
-                        {student.name} ({student.department})
-                        <button onClick={() => removeStudent(student.id)}>Remove</button>
-                        <button onClick={() => toggleViewReports(student.id)}>
-                            {selectedStudentId === student.id ? 'Hide Reports' : 'View Reports'}
-                        </button>
+            {students.map((student) => (
+                <li key={student.id}>
+                    {student.name} ({student.department})
+                    <button onClick={() => removeStudent(student.id)}>Remove</button>
+                    <button onClick={() => toggleViewReports(student.id)}>
+                        {selectedStudentId === student.id ? 'Hide Reports' : 'View Reports'}
+                    </button>
 
-                        {selectedStudentId === student.id && reports[student.id] && (
-                            <ul>
-                                {reports[student.id].length > 0 ? (
-                                    reports[student.id].map((report) => (
-                                        <li key={report.id}>
-                                            {report.content} - {new Date(report.timestamp).toLocaleString()}
-                                        </li>
-                                    ))
-                                ) : (
-                                    <li>No reports available for this student.</li>
-                                )}
-                            </ul>
-                        )}
-                    </li>
-                ))}
-            </ul>
+                    {}
+                    <button onClick={() => generateStudentReport(student)}>Generate Report</button>
+
+                    {}
+                    {selectedStudentId === student.id && reports[student.id] && (
+                        <ul>
+                            {reports[student.id].length > 0 ? (
+                                reports[student.id].map((report) => (
+                                    <li key={report.id}>
+                                        {report.content} - {new Date(report.timestamp).toLocaleString()}
+                                    </li>
+                                ))
+                            ) : (
+                                <li>No reports available for this student.</li>
+                            )}
+                        </ul>
+                    )}
+                </li>
+            ))}
+        </ul>
+
 
             <h2>Add Tutor</h2>
             <input
