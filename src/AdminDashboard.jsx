@@ -130,16 +130,44 @@ const AdminDashboard = () => {
        
     const generateStudentReport = async (studentId) => {
         try {
-            const response = await axios.get(`http://localhost:8080/admin/students/reports?student_id=${studentId}`, {
+            console.log(studentId)
+            const response = await axios.get(`http://localhost:8080/admin/students/reports/${studentId}`, {
                 headers: {
                     'Role': 'admin'
                 }
             });
-            setSelectedStudentId(response.data);  
+            console.log(response.data)
+            const reports = response.data;  
+
+            createCSV(reports);
         } catch (error) {
             console.error(`Error generating report for student ID ${studentId}:`, error);
         }
     };
+
+    const createCSV = (reports) => {
+        const csvRows = [
+            ['Content', 'Timestamp'] 
+        ];
+    
+        reports.forEach(report => {
+            csvRows.push([report.content, report.timestamp]);
+        });
+
+        const csvContent = csvRows.map(row => row.join(',')).join('\n');
+    
+        const blob = new Blob([csvContent], { type: 'text/csv' });
+    
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = 'student_reports.csv';  
+    
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    };
+
+    
 
     return (
         <div>
@@ -171,7 +199,7 @@ const AdminDashboard = () => {
                     </button>
 
                     {}
-                    <button onClick={() => generateStudentReport(student)}>Generate Report</button>
+                    <button onClick={() => generateStudentReport(student.id)}>Generate Report</button>
 
                     {}
                     {selectedStudentId === student.id && reports[student.id] && (
