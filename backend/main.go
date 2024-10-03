@@ -76,7 +76,7 @@ func main() {
 
 	router.HandleFunc("GET /api/students", studentAPI.GetStudents)
 
-	router.Handle("/api/students/reports", middleware.AdminMiddleware(getTutorRoleFromRequest)(http.HandlerFunc(studentAPI.AddReport)))
+	router.Handle("/api/students/reports/{id}", middleware.AdminMiddleware(getTutorRoleFromRequest)(http.HandlerFunc(studentAPI.AddReport)))
 	router.Handle("/api/students/reports/edit", middleware.AdminMiddleware(getTutorRoleFromRequest)(http.HandlerFunc(studentAPI.EditReport)))
 
 	router.Handle("POST /api/students", middleware.AdminMiddleware(getTutorRoleFromRequest)(http.HandlerFunc(studentAPI.AddStudent)))

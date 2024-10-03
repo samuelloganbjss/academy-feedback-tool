@@ -16,11 +16,21 @@ const Home = () => {
 
   const handleReportSubmit = () => {
     if (selectedStudent && reportContent) {
-      axios.post(`http://localhost:8080/api/students/${selectedStudent}/reports`, {
+      axios.post(`http://localhost:8080/api/students/reports/${selectedStudent}`, {
+        student_id: 1,
         content: reportContent,
         tutorID: 1 
-      })
+      },
+      {
+        headers: {
+          'Content-Type': 'application/json',
+          'Role': 'admin',
+        }
+
+      }
+    )
       .then(response => {
+        console.log(reportContent)
         console.log('Report added:', response.data);
         setReportContent(''); 
       })
