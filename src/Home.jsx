@@ -16,25 +16,25 @@ const Home = () => {
 
   const handleReportSubmit = () => {
     if (selectedStudent && reportContent) {
-      axios.post(`http://localhost:8080/api/students/reports/${selectedStudent}`, {
-        student_id: 1,
+      axios.post(`http://localhost:8080/api/students/reports`, {
+        student_id: selectedStudent,
+        tutorID: 1,
         content: reportContent,
-        tutorID: 1 
       },
-      {
-        headers: {
-          'Content-Type': 'application/json',
-          'Role': 'admin',
-        }
+        {
+          headers: {
+            'Content-Type': 'application/json',
+            'Role': 'admin',
+          }
 
-      }
-    )
-      .then(response => {
-        console.log(reportContent)
-        console.log('Report added:', response.data);
-        setReportContent(''); 
-      })
-      .catch(error => console.error('Error adding report:', error));
+        }
+      )
+        .then(response => {
+          console.log(reportContent)
+          console.log('Report added:', response.data);
+          setReportContent('');
+        })
+        .catch(error => console.error('Error adding report:', error));
     }
   };
 
@@ -43,7 +43,12 @@ const Home = () => {
       <h1>Academy Feedback Tool</h1>
 
       <h2>Select a Student:</h2>
-      <select onChange={(e) => setSelectedStudent(e.target.value)}>
+      <select onChange={(e) => {
+        const selectedValue = e.target.value;
+        setSelectedStudent(selectedValue ? parseInt(selectedValue, 10) : null);
+        console.log(selectedValue); 
+      }
+      }>
         <option value="">--Select a student--</option>
         {students.map(student => (
           <option key={student.id} value={student.id}>

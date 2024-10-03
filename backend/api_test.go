@@ -6,21 +6,20 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"testing"
-
 	middleware "github.com/samuelloganbjss/academy-feedback-tool/admin"
 	"github.com/samuelloganbjss/academy-feedback-tool/api"
 	"github.com/samuelloganbjss/academy-feedback-tool/db"
 	"github.com/samuelloganbjss/academy-feedback-tool/service"
 )
 
-var studentAPI *api.StudentAPI
+var tutorAPI *api.TutorAPI
 
 func setup() {
 
 	dbRepo := db.NewInMemoryRepository()
 
-	studentService := service.NewStudentService(dbRepo)
-	studentAPI = api.NewStudentAPI(studentService)
+	tutorService := service.NewTutorService(dbRepo)
+	tutorAPI = api.NewTutorAPI(tutorService)
 }
 
 func TestAddReport(t *testing.T) {
@@ -44,7 +43,7 @@ func TestAddReport(t *testing.T) {
 
 	rr := httptest.NewRecorder()
 
-	handler := http.HandlerFunc(studentAPI.AddReport)
+	handler := http.HandlerFunc(tutorAPI.AddReport)
 	handler.ServeHTTP(rr, req)
 
 	if status := rr.Code; status != http.StatusOK {
@@ -83,7 +82,7 @@ func TestAdminAccess_AddReport(t *testing.T) {
 
 	rr := httptest.NewRecorder()
 
-	handler := middleware.AdminMiddleware(getTutorRoleFromRequest)(http.HandlerFunc(studentAPI.AddReport))
+	handler := middleware.AdminMiddleware(getTutorRoleFromRequest)(http.HandlerFunc(tutorAPI.AddReport))
 	handler.ServeHTTP(rr, req)
 
 	if status := rr.Code; status != http.StatusOK {
@@ -108,7 +107,7 @@ func TestNonAdminAccess_AddReport(t *testing.T) {
 
 	rr := httptest.NewRecorder()
 
-	handler := middleware.AdminMiddleware(getTutorRoleFromRequest)(http.HandlerFunc(studentAPI.AddReport))
+	handler := middleware.AdminMiddleware(getTutorRoleFromRequest)(http.HandlerFunc(tutorAPI.AddReport))
 	handler.ServeHTTP(rr, req)
 
 	if status := rr.Code; status != http.StatusForbidden {

@@ -2,9 +2,7 @@ package main
 
 import (
 	"fmt"
-	"io"
 	"net/http"
-
 	"github.com/rs/cors"
 	middleware "github.com/samuelloganbjss/academy-feedback-tool/admin"
 	"github.com/samuelloganbjss/academy-feedback-tool/api"
@@ -19,21 +17,11 @@ func rootHandler(writer http.ResponseWriter, request *http.Request) {
 	fmt.Fprintf(writer, "Hello, welcome to the Feedback tool for the academy!")
 }
 
-func getTutors(writer http.ResponseWriter, request *http.Request) {
-	fmt.Printf("got /api/tutors request\n")
-	io.WriteString(writer, "a list of all tutors from the db")
-}
-
 func CorsMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
 		writer.Header().Set("Access-Control-Allow-Origin", "*")
 		next.ServeHTTP(writer, request)
 	})
-}
-
-func getStudents(writer http.ResponseWriter, request *http.Request) {
-	fmt.Printf("got /api/students  request\n")
-	io.WriteString(writer, "a list of all students from the db")
 }
 
 func initializeDatabase(config config.DatabaseConfig) (student.StudentRepository, tutor.TutorRepository, error) {
@@ -72,13 +60,7 @@ func main() {
 
 	router.HandleFunc("/", rootHandler)
 
-	router.Handle("/admin/students/reports", middleware.AdminMiddleware(getTutorRoleFromRequest)(http.HandlerFunc(studentAPI.GetStudentReports)))
-
 	router.HandleFunc("GET /api/students", studentAPI.GetStudents)
-
-	router.Handle("/api/students/reports/{id}", middleware.AdminMiddleware(getTutorRoleFromRequest)(http.HandlerFunc(studentAPI.AddReport)))
-	router.Handle("/api/students/reports/edit", middleware.AdminMiddleware(getTutorRoleFromRequest)(http.HandlerFunc(studentAPI.EditReport)))
-
 	router.Handle("POST /api/students", middleware.AdminMiddleware(getTutorRoleFromRequest)(http.HandlerFunc(studentAPI.AddStudent)))
 	router.Handle("DELETE /api/students/remove/{id}", middleware.AdminMiddleware(getTutorRoleFromRequest)(http.HandlerFunc(studentAPI.DeleteSingleStudent)))
 
@@ -86,9 +68,11 @@ func main() {
 	tutorAPI := api.NewTutorAPI(tutorService)
 
 	router.HandleFunc("GET /api/tutors", tutorAPI.GetTutors)
-
 	router.Handle("POST /api/tutors", middleware.AdminMiddleware(getTutorRoleFromRequest)(http.HandlerFunc(tutorAPI.AddTutor)))
 	router.Handle("DELETE /api/tutors/remove/{id}", middleware.AdminMiddleware(getTutorRoleFromRequest)(http.HandlerFunc(tutorAPI.DeleteSingleTutor)))
+	router.Handle("POST /api/students/reports", middleware.AdminMiddleware(getTutorRoleFromRequest)(http.HandlerFunc(tutorAPI.AddReport)))
+	router.Handle("POST /api/students/reports/edit/{id}", middleware.AdminMiddleware(getTutorRoleFromRequest)(http.HandlerFunc(tutorAPI.EditReport)))
+	router.Handle("GET /admin/students/reports/{id}", middleware.AdminMiddleware(getTutorRoleFromRequest)(http.HandlerFunc(tutorAPI.GetStudentReports)))
 
 	c := cors.New(cors.Options{
 		AllowedOrigins: []string{"http://localhost:3000"},
