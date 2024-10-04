@@ -3,7 +3,6 @@ package service
 import (
 	"errors"
 	"fmt"
-
 	"github.com/samuelloganbjss/academy-feedback-tool/model"
 	"github.com/samuelloganbjss/academy-feedback-tool/repository/student"
 )
@@ -36,5 +35,3 @@ func (s *StudentService) DeleteStudentService(id int) (int, error) {
 func (s *StudentService) AddStudentService(student model.Student) (model.Student, error) {
 	return s.repository.AddStudent(student)
 }
-
-
