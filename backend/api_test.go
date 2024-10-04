@@ -3,12 +3,12 @@ package main
 import (
 	"bytes"
 	"encoding/json"
+	middleware "github.com/samuelloganbjss/academy-feedback-tool/admin"
+	"github.com/samuelloganbjss/academy-feedback-tool/api"
 	"net/http"
 	"net/http/httptest"
 	"testing"
-	middleware "github.com/samuelloganbjss/academy-feedback-tool/admin"
-	"github.com/samuelloganbjss/academy-feedback-tool/api"
-	"github.com/samuelloganbjss/academy-feedback-tool/db"
+	"github.com/samuelloganbjss/academy-feedback-tool/repository/tutor"
 	"github.com/samuelloganbjss/academy-feedback-tool/service"
 )
 
@@ -16,9 +16,9 @@ var tutorAPI *api.TutorAPI
 
 func setup() {
 
-	dbRepo := db.NewInMemoryRepository()
+	tutorRepo := tutor.NewInMemoryTutorRepository()
 
-	tutorService := service.NewTutorService(dbRepo)
+	tutorService := service.NewTutorService(tutorRepo)
 	tutorAPI = api.NewTutorAPI(tutorService)
 }
 

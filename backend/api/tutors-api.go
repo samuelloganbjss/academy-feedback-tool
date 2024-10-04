@@ -132,9 +132,6 @@ func (api *TutorAPI) GetStudentReports(writer http.ResponseWriter, request *http
 		writer.Write([]byte("[]"))
 		return
 	}
-
-	fmt.Printf("Reports for student %d: %+v\n", studentID, reports)
-
 	writer.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(writer).Encode(reports)
 }

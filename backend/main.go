@@ -3,15 +3,14 @@ package main
 import (
 	"fmt"
 	"net/http"
-
 	"github.com/rs/cors"
 	middleware "github.com/samuelloganbjss/academy-feedback-tool/admin"
 	"github.com/samuelloganbjss/academy-feedback-tool/api"
 	"github.com/samuelloganbjss/academy-feedback-tool/config"
-	"github.com/samuelloganbjss/academy-feedback-tool/db"
 	"github.com/samuelloganbjss/academy-feedback-tool/repository/student"
 	"github.com/samuelloganbjss/academy-feedback-tool/repository/tutor"
 	"github.com/samuelloganbjss/academy-feedback-tool/service"
+
 )
 
 func rootHandler(writer http.ResponseWriter, request *http.Request) {
@@ -28,7 +27,7 @@ func CorsMiddleware(next http.Handler) http.Handler {
 func initializeDatabase(config config.DatabaseConfig) (student.StudentRepository, tutor.TutorRepository, error) {
 	switch config.Type {
 	case "inmemory":
-		return db.NewInMemoryRepository(), db.NewInMemoryRepository(), nil
+		return student.NewInMemoryStudentRepository(), tutor.NewInMemoryTutorRepository(), nil
 	default:
 		return nil, nil, fmt.Errorf("unsupported database type: %s", config.Type)
 	}
@@ -46,15 +45,17 @@ func getTutorRoleFromRequest(r *http.Request) (string, error) {
 func main() {
 
 	config := config.InMemory
+	
+	studentRepo, tutorRepo, err := initializeDatabase(config)
 
-	dbRepoStudent, dbRepoTutor, err := initializeDatabase(config)
 	if err != nil {
 		fmt.Println("Error initializing the database:", err)
 		return
 	}
-	defer dbRepoStudent.Close()
+	defer studentRepo.Close()
+	defer tutorRepo.Close()
 
-	studentService := service.NewStudentService(dbRepoStudent)
+	studentService := service.NewStudentService(studentRepo)
 	studentAPI := api.NewStudentAPI(studentService)
 
 	router := http.NewServeMux()
@@ -65,7 +66,7 @@ func main() {
 	router.Handle("POST /api/students", middleware.AdminMiddleware(getTutorRoleFromRequest)(http.HandlerFunc(studentAPI.AddStudent)))
 	router.Handle("DELETE /api/students/remove/{id}", middleware.AdminMiddleware(getTutorRoleFromRequest)(http.HandlerFunc(studentAPI.DeleteSingleStudent)))
 
-	tutorService := service.NewTutorService(dbRepoTutor)
+	tutorService := service.NewTutorService(tutorRepo)
 	tutorAPI := api.NewTutorAPI(tutorService)
 
 	router.HandleFunc("GET /api/tutors", tutorAPI.GetTutors)
