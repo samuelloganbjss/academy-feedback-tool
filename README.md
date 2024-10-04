@@ -7,7 +7,11 @@ Ensure that your server is running for the frontend to fetch data as this uses a
 
 ## Available Scripts
 
-In the src directory in the project directory, you can run:
+In the src directory in the project directory, run:
+
+### `npm install`
+
+This will install the necessary dependencies such as Bootstrap.
 
 ### `npm start`
 
@@ -17,6 +21,19 @@ Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
 The page will reload when you make changes.\
 You may also see any lint errors in the console.
 
+In the backend directory in the project directory, run:
+
+### `go run main.go`
+
+To start the backend server run this command from the backend directory within the project directory. 
+`go run main.go`
+This will run an API at [http://localhost:8080](http://localhost:8080) click to view it in your browser.
+
+### `go test -v`
+
+This command will run the tests for the backend and API code. 
+
+### Optional
 ### `npm test`
 
 Launches the test runner in the interactive watch mode.\
@@ -33,9 +50,5 @@ Your app is ready to be deployed!
 
 See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
 
-### `go run main.go`
 
-To start the backend server run this command from the backend directory within the project directory. 
-`go run main.go`
-This will run an API at [http://localhost:8080](http://localhost:8080) click to view it in your browser.
 
