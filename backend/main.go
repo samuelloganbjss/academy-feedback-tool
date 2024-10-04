@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"net/http"
+
 	"github.com/rs/cors"
 	middleware "github.com/samuelloganbjss/academy-feedback-tool/admin"
 	"github.com/samuelloganbjss/academy-feedback-tool/api"
@@ -10,7 +11,6 @@ import (
 	"github.com/samuelloganbjss/academy-feedback-tool/repository/student"
 	"github.com/samuelloganbjss/academy-feedback-tool/repository/tutor"
 	"github.com/samuelloganbjss/academy-feedback-tool/service"
-
 )
 
 func rootHandler(writer http.ResponseWriter, request *http.Request) {
@@ -45,7 +45,7 @@ func getTutorRoleFromRequest(r *http.Request) (string, error) {
 func main() {
 
 	config := config.InMemory
-	
+
 	studentRepo, tutorRepo, err := initializeDatabase(config)
 
 	if err != nil {
